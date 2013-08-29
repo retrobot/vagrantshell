@@ -9,12 +9,15 @@
 
 # Update
 apt-get update
-
+# Needed for add repo
+apt-get install -y python-software-properties
 # Add repos
 add-apt-repository ppa:webupd8team/sublime-text-2
 
 # Extra packages
 apt-get install -y curl vim git-core
+# For replacing \r new line windows specific
+apt-get install -y dos2unix
 # Text editors
 apt-get install -y vim sublime-text-2
 # gui packages
@@ -39,6 +42,7 @@ VHOST=$(cat <<EOF
   DocumentRoot "/var/www"
   ServerName localhost
   <Directory "/var/www">
+    Options FollowSymLinks  
     AllowOverride All
   </Directory>
 </VirtualHost>
@@ -67,6 +71,9 @@ mysql -u root -e "FLUSH PRIVILEGES"
 
 # Download and extract
 if [ ! -f "/vagrant/httpdocs/index.php" ]; then
+  if [ ! -d "/vagrant/httpdocs" ]; then
+    mkdir -p "/vagrant/httpdocs"
+  fi
   cd /vagrant/httpdocs
   wget http://www.magentocommerce.com/downloads/assets/1.7.0.2/magento-1.7.0.2.tar.gz
   tar -zxvf magento-1.7.0.2.tar.gz
