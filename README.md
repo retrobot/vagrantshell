@@ -1,0 +1,1 @@
+Vagrant with shell provisioner for magento based on cookieflow
