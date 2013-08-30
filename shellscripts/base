@@ -12,8 +12,8 @@ for i in "${argument_lists[@]}"
 do
   if [[ $i = "-gui" ]] ; then
     GUI = "yes"
-  elif [[ $i = "-nolamp" ]]; then
-    NOLAMP = "yes"
+  elif [[ $i = "-lamp" ]]; then
+    LAMP = "yes"
   fi
 done
 
@@ -35,7 +35,7 @@ if [[ "$GUI" = "yes" ]]; then
 fi
 
 # Install (L)AMP stack - Apache, MySQL, PHP 
-if [[ ! "$NOLAMP" = "yes" ]]; then
+if [[ "$LAMP" = "yes" ]]; then
   apt-get install -y apache2
   apt-get install -y php5
   apt-get install -y libapache2-mod-php5
