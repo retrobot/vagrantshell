@@ -53,7 +53,8 @@
     gui_list=(  
       sublime-text-2
       vim-gnome
-      lubuntu-desktop
+      # lubuntu-desktop
+      openbox
     )
     for guipkg in ${gui_list[@]}; do 
       apt_package_check_list+=($guipkg)
