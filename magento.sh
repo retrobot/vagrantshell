@@ -6,9 +6,14 @@
 # --------------------
 # http://www.magentocommerce.com/wiki/1_-_installation_and_configuration/installing_magento_via_shell_ssh
 
+if [[ $(/usr/bin/id -u) -ne 0 ]]; then
+    echo "Not running as root"
+    exit
+fi
+
 # Download and extract
-if [ ! -f "/vagrant/httpdocs/index.php" ]; then
-  if [ ! -d "/vagrant/httpdocs" ]; then
+if [[ ! -f "/vagrant/httpdocs/index.php" ]]; then
+  if [[ ! -d "/vagrant/httpdocs" ]]; then
     mkdir -p "/vagrant/httpdocs"
   fi
   cd /vagrant/httpdocs
@@ -22,7 +27,7 @@ if [ ! -f "/vagrant/httpdocs/index.php" ]; then
 fi
 
 # Run installer
-if [ ! -f "/vagrant/httpdocs/app/etc/local.xml" ]; then
+if [[ ! -f "/vagrant/httpdocs/app/etc/local.xml" ]]; then
   cd /vagrant/httpdocs
   sudo /usr/bin/php -f install.php -- --license_agreement_accepted yes \
   --locale en_GB --timezone "Europe/London" --default_currency GBP \
