@@ -1,46 +1,165 @@
 #!/bin/bash
 
-# Base script
+# Base script - mainly from vagrantpress
 # - MySql settings:
-# -- db_name boxdatabase
-# -- db_user boxuser 
-# -- db_pass boxpassword 
+# ---- db_name boxdatabase
+# ---- db_user boxuser 
+# ---- db_pass boxpassword 
 
-# Check for argument presence
-argument_lists=( "$@" )
-for i in "${argument_lists[@]}"
-do
-  if [[ $i = "-gui" ]] ; then
-    GUI = "yes"
-  elif [[ $i = "-lamp" ]]; then
-    LAMP = "yes"
-  fi
-done
+#######
+# Initial settings
+  # For calculating time of script to run
+    start_seconds=`date +%s`
+  # Pinging google to check if internet connection present
+    ping_result=`ping -c 2 8.8.4.4 2>&1`
+    if [[ $ping_result != *bytes?from* ]]; then
+      ping_result=`ping -c 2 4.2.2.2 2>&1`
+    fi
+  # Check for argument presence
+    argument_lists=( "$@" )
+    for i in "${argument_lists[@]}"; do
+      if [[ $i = "-gui" ]] ; then
+        GUI = "yes"
+      elif [[ $i = "-lamp" ]]; then
+        LAMP = "yes"
+      fi
+    done
 
-# Installation start
-# Update
-apt-get update
-# Needed for add repo
-apt-get install -y python-software-properties
-# Extra packages
-apt-get install -y curl vim git-core
-# For replacing \r new line windows specific
-apt-get install -y dos2unix
+# list of packages to install
+  apt-package-install-list=()
+# Check list - before installing
+  apt-package-check-list=(
+    python-software-properties
+    # utilities
+    imagemagick
+    curl
+    vim
+    git-core
+    unzip
+    # dos endings conversion tool (\r)
+    dos2unix
+    # for grunt
+    nodejs
+  )
 
 # Gui mode - packages
-if [[ "$GUI" = "yes" ]]; then
-  add-apt-repository ppa:webupd8team/sublime-text-2
-  apt-get install -y sublime-text-2
-  apt-get install -y vim-gnome lubuntu-desktop
-fi
+  if [[ "$GUI" = "yes" ]]; then
+    gui_list=(  
+      sublime-text-2
+      vim-gnome
+      lubuntu-desktop
+    )
+    for guipkg in ${gui_list[@]}; do 
+      apt_package_check_list+=($guipkg)
+    done
+  fi
 
 # Install (L)AMP stack - Apache, MySQL, PHP 
-if [[ "$LAMP" = "yes" ]]; then
-  apt-get install -y apache2
-  apt-get install -y php5
-  apt-get install -y libapache2-mod-php5
-  apt-get install -y php5-mysql php5-curl php5-gd php5-intl php-pear php5-imap php5-mcrypt php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl php-apc
+  if [[ "$LAMP" = "yes" ]]; then
+    lamp_list=(
+      apache2
+      php5
+      libapache2-mod-php5
+      php5-mysql php5-curl php5-gd php5-intl php-pear php5-imap
+      php5-mcrypt php5-ming php5-ps php5-pspell php5-recode
+      php5-snmp php5-sqlite php5-tidy
+      php5-xmlrpc php5-xsl php-apc
+    )
+      for lamppkg in ${lamp_list[@]}; do 
+        apt_package_check_list+=($lamppkg)
+      done
+  fi
 
+# Looping through array of packages to install. If not installed add to array
+  for pkg in "${apt_package_check_list[@]}"; do
+    package_version=`dpkg -s $pkg 2>&1 | grep 'Version:' | cut -d " " -f 2`
+    if [[ $package_version != "" ]]
+    then
+      space_count=`expr 20 - "${#pkg}"` #11
+      pack_space_count=`expr 30 - "${#package_version}"`
+      real_space=`expr ${space_count} + ${pack_space_count} + ${#package_version}`
+      printf " * $pkg %${real_space}.${#package_version}s ${package_version}\n"
+    else
+      echo " *" $pkg [not installed]
+      apt_package_install_list+=($pkg)
+    fi
+  done
+
+# MySQL
+#
+# Use debconf-set-selections to specify the default password for the root MySQL
+# account. This runs on every provision, even if MySQL has been installed. If
+# MySQL is already installed, it will not affect anything. The password in the
+# following two lines *is* actually set to the word 'blank' for the root user.
+echo mysql-server mysql-server/root_password password blank | debconf-set-selections
+echo mysql-server mysql-server/root_password_again password blank | debconf-set-selections
+
+# Provide our custom apt sources before running `apt-get update`
+ln -sf /srv/config/apt-source-append.list /etc/apt/sources.list.d/extra-sources.list | echo "Linked custom apt sources"
+
+# Install when interent connection present
+if [[ $ping_result == *bytes?from* ]]
+  if [ ${#apt_package_install_list[@]} = 0 ];
+  then
+    echo -e "No apt packages to install.\n"
+  else
+    # Add the public keys for the packages from non standard sources via apt source.list
+    # Nginx.org nginx key ABF5BD827BD9BF62
+    gpg -q --keyserver keyserver.ubuntu.com --recv-key ABF5BD827BD9BF62
+    gpg -q -a --export ABF5BD827BD9BF62 | apt-key add -
+    # Launchpad Subversion key EAA903E3A2F4C039
+    gpg -q --keyserver keyserver.ubuntu.com --recv-key EAA903E3A2F4C039
+    gpg -q -a --export EAA903E3A2F4C039 | apt-key add -
+    # Launchpad PHP key 4F4EA0AAE5267A6C
+    gpg -q --keyserver keyserver.ubuntu.com --recv-key 4F4EA0AAE5267A6C
+    gpg -q -a --export 4F4EA0AAE5267A6C | apt-key add -
+    # Launchpad git key A1715D88E1DF1F24
+    gpg -q --keyserver keyserver.ubuntu.com --recv-key A1715D88E1DF1F24
+    gpg -q -a --export A1715D88E1DF1F24 | apt-key add -
+    # Launchpad nodejs key C7917B12
+    gpg -q --keyserver keyserver.ubuntu.com --recv-key C7917B12
+    gpg -q -a --export  C7917B12  | apt-key add -
+    # Sublime text
+    gpg -q --keyserver keyserver.ubuntu.com --recv-key EEA14886
+    gpg -q -a --export  EEA14886  | apt-key add -
+
+    # update all of the package references before installing anything
+    echo "Running apt-get update..."
+    apt-get update --assume-yes
+
+    # install required packages
+    echo "Installing apt-get packages..."
+    apt-get install --assume-yes ${apt_package_install_list[@]}
+
+    # Clean up apt caches
+    apt-get clean
+  fi
+
+
+# Composer installation / updating
+  if composer --version | grep -q 'Composer version'; then
+      echo "Updating Composer..."
+      composer self-update
+    else
+      echo "Installing Composer..."
+      curl -sS https://getcomposer.org/installer | php
+      chmod +x composer.phar
+      mv composer.phar /usr/local/bin/composer
+  fi
+# Grunt installation
+  if grunt --version ; then
+      echo "Updating Grunt CLI"
+      npm update -g grunt-cli
+    else
+      echo "Installing Grunt CLI"
+      npm install -g grunt-cli
+  fi
+
+else
+  echo -e "\nNo network available, skipping network installations"
+fi
+
+if [[ "$LAMP" = "yes" ]]; then
   # Delete default apache web dir and symlink mounted vagrant dir from host machine
   rm -rf /var/www
   mkdir /vagrant/httpdocs
@@ -62,6 +181,7 @@ EOF
 
   echo "$VHOST" > /etc/apache2/sites-enabled/000-default
 
+# Restarting services
   a2enmod rewrite
   service apache2 restart
 
