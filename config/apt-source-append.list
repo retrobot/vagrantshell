@@ -2,11 +2,11 @@
 # versions of various packages that are installed
 
 # Provides Sublime Text 2
-deb http://ppa.launchpad.net/webupd8team/sublime-text-2/ubuntu precise main 
-deb-src http://ppa.launchpad.net/webupd8team/sublime-text-2/ubuntu precise main 
+deb http://ppa.launchpad.net/webupd8team/sublime-text-2/ubuntu precise main
+deb-src http://ppa.launchpad.net/webupd8team/sublime-text-2/ubuntu precise main
 
 # Provides SVN 1.7.9
-deb http://ppa.launchpad.net/svn/ppa/ubuntu precise main 
+deb http://ppa.launchpad.net/svn/ppa/ubuntu precise main
 deb-src http://ppa.launchpad.net/svn/ppa/ubuntu precise main
 
 # Provides PHP 5.4
@@ -18,7 +18,7 @@ deb http://nginx.org/packages/ubuntu/ precise nginx
 deb-src http://nginx.org/packages/ubuntu/ precise nginx
 
 # Provides Git 1.8
-deb http://ppa.launchpad.net/git-core/ppa/ubuntu precise main 
+deb http://ppa.launchpad.net/git-core/ppa/ubuntu precise main
 deb-src http://ppa.launchpad.net/git-core/ppa/ubuntu precise main
 
 # Provides Node.js

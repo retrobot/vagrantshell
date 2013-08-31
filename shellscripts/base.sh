@@ -5,6 +5,8 @@
 # ---- db_name boxdatabase
 # ---- db_user boxuser 
 # ---- db_pass boxpassword 
+# - MySql:
+# - u root -p root
 
 #######
 # Initial settings
@@ -45,16 +47,17 @@
     dos2unix
     # for grunt / 'libcompass-ruby1.8' available too
     libcompass-ruby
+    g++
     nodejs
 )
 
 # Gui mode - packages
   if [[ "$GUI" = "yes" ]]; then
     gui_list=( 
-      sublime-text-2
+      sublime-text
       vim-gnome
       # lubuntu-desktop
-      openbox
+      lxde
     )
     for guipkg in ${gui_list[@]}; do 
       apt_package_check_list+=($guipkg)
@@ -92,25 +95,22 @@
     fi
   done
 
-gem install capistrano
-gem install capistrano-ext
-
 # MySQL
 #
 # Use debconf-set-selections to specify the default password for the root MySQL
 # account. This runs on every provision, even if MySQL has been installed. If
 # MySQL is already installed, it will not affect anything. The password in the
 # following two lines *is* actually set to the word 'blank' for the root user.
-echo mysql-server mysql-server/root_password password blank | debconf-set-selections
-echo mysql-server mysql-server/root_password_again password blank | debconf-set-selections
+echo mysql-server mysql-server/root_password password root | debconf-set-selections
+echo mysql-server mysql-server/root_password_again password root | debconf-set-selections
 
 # Provide our custom apt sources before running `apt-get update`
+# cp /srv/config/apt-source-append.list /etc/apt/sources.list.d/ | echo "Linked custom apt sources"
 ln -sf /srv/config/apt-source-append.list /etc/apt/sources.list.d/extra-sources.list | echo "Linked custom apt sources"
 
 # Install when interent connection present
-  if [[ $ping_result == *bytes?from* ]]
-    if [ ${#apt_package_install_list[@]} = 0 ];
-    then
+  if [[ $ping_result == *bytes?from* ]] ; then
+    if [ ${#apt_package_install_list[@]} = 0 ]; then
       echo -e "No apt packages to install.\n"
     else
       # Add the public keys for the packages from non standard sources via apt source.list
@@ -139,6 +139,9 @@ ln -sf /srv/config/apt-source-append.list /etc/apt/sources.list.d/extra-sources.
 
       # install required packages
       echo "Installing apt-get packages..."
+
+      echo "TEST IF IT SEES PACKAGES LIST"
+      echo ${apt_package_install_list[@]}
       apt-get install --assume-yes ${apt_package_install_list[@]}
 
       # Clean up apt caches
@@ -156,6 +159,16 @@ ln -sf /srv/config/apt-source-append.list /etc/apt/sources.list.d/extra-sources.
         chmod +x composer.phar
         mv composer.phar /usr/local/bin/composer
     fi
+
+  # Capistrano installation / updating
+    if capify -v | grep -q 'capify'; then
+	echo "Capistrano is installed"
+    else
+	echo "Installing capistrano"
+	gem install capistrano
+	gem install capistrano-ext
+    fi
+
   # Grunt installation
     if grunt --version ; then
         echo "Updating Grunt CLI"
@@ -172,24 +185,26 @@ ln -sf /srv/config/apt-source-append.list /etc/apt/sources.list.d/extra-sources.
 
 ### Specific files with DATA install
 ####
-  if [[ $ping_result == *bytes?from* ]]
+  if [[ $ping_result == *bytes?from* ]]; then
   # Git repos
     echo "Clone bash and vim settings plus scripts "
     git clone git://github.com/retrobot/bash /home/vagrant/mybash
     cp -rf /home/vagrant/mybash/* /home/vagrant/mybash/.* /home/vagrant/
   
   # Grunt install into specific project
-    git clone git://github.com/retrobot/grunt /vagrant/httpdocs/
+   git clone git://github.com/retrobot/grunt /vagrant/httpdocs/
     # git clone git://github.com/retrobot/grunt-framework /vagrant/httpdocs/
     # Grunfile.js/coffee and package.json will be copied to project
-    mv /vagrant/httpdocs/grunt/* /vagrant/httpdocs
+   mv /vagrant/httpdocs/grunt/* /vagrant/httpdocs/
     # This will install all dependancies regarding to package.json
-    npm install
+   
+   cd /vagrant/httpdocs/ 
+   npm install
     # command: npm install <module> --save-dev  
     # will install plugin to project and append command to package.json
     # 'grunt init' will create project specific package.json
     # This will start grunt
-    grunt
+   grunt
   else
     echo -e "\nNo network available, skipping network installations"
   fi
@@ -230,7 +245,7 @@ EOF
   # Install MySQL quietly
   apt-get -q -y install mysql-server-5.5
 
-  mysql -u root -e "CREATE DATABASE IF NOT EXISTS boxdatabase"
-  mysql -u root -e "GRANT ALL PRIVILEGES ON boxdatabase.* TO 'boxuser'@'localhost' IDENTIFIED BY 'boxpassword'"
-  mysql -u root -e "FLUSH PRIVILEGES"
+  mysql -u root -p root -e "CREATE DATABASE IF NOT EXISTS boxdatabase"
+  mysql -u root -p root -e "GRANT ALL PRIVILEGES ON boxdatabase.* TO 'boxuser'@'localhost' IDENTIFIED BY 'boxpassword'"
+  mysql -u root -p root -e "FLUSH PRIVILEGES"
 fi

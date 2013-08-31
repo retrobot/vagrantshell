@@ -41,6 +41,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # config.vm.synced_folder "../data", "/vagrant_data"
 
  config.vm.synced_folder "config/", "/srv/config"
+ config.vm.synced_folder "www/", "/srv/www/", :owner => "www-data", :extra => 'dmode=775,fmode=774'
  
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -59,6 +60,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   ###### PROVISION ######
   # Basic - shell
- config.vm.provision :shell, :path => "shellprovision.sh"
-
+  # Core script. Options: '-gui' '-lamp'
+ config.vm.provision 	:shell,
+			:path => "./shellscripts/base.sh",
+			:args => "-gui -lamp"
+ config.vm.provision :shell, :path => "./shellscripts/magento.sh"
 end
