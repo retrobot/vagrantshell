@@ -11,6 +11,11 @@ if [[ $(/usr/bin/id -u) -ne 0 ]]; then
     exit
 fi
 
+# Create database
+  mysql -u root -p root -e "CREATE DATABASE IF NOT EXISTS boxdatabase"
+  mysql -u root -p root -e "GRANT ALL PRIVILEGES ON boxdatabase.* TO 'boxuser'@'localhost' IDENTIFIED BY 'boxpassword'"
+  mysql -u root -p root -e "FLUSH PRIVILEGES"
+
 # Download and extract
 if [[ ! -f "/vagrant/httpdocs/index.php" ]]; then
   if [[ ! -d "/vagrant/httpdocs" ]]; then
