@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Base script - mainly from vagrantpress
+# Base script - based on vagrantpress
 # - MySql settings:
 # ---- db_name boxdatabase
 # ---- db_user boxuser 
@@ -24,16 +24,16 @@
     argument_lists=( "$@" )
     for i in "${argument_lists[@]}"; do
       if [[ $i = "-gui" ]] ; then
-        GUI = "yes"
+        GUI="yes"
       elif [[ $i = "-lamp" ]]; then
-        LAMP = "yes"
+        LAMP="yes"
       fi
     done
 
 # list of packages to install
-  apt-package-install-list=()
+  apt_package_install_list=()
 # Check list - before installing
-  apt-package-check-list=(
+  apt_package_check_list=(
     python-software-properties
     # utilities
     imagemagick
@@ -46,11 +46,11 @@
     # for grunt / 'libcompass-ruby1.8' available too
     libcompass-ruby
     nodejs
-  )
+)
 
 # Gui mode - packages
   if [[ "$GUI" = "yes" ]]; then
-    gui_list=(  
+    gui_list=( 
       sublime-text-2
       vim-gnome
       # lubuntu-desktop
