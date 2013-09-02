@@ -47,6 +47,8 @@
     dos2unix
     # for grunt / 'libcompass-ruby1.8' available too
     libcompass-ruby
+    ruby-compass
+    # for node
     g++
     nodejs
 )
@@ -67,6 +69,8 @@
 # Install (L)AMP stack - Apache, MySQL, PHP 
   if [[ "$LAMP" = "yes" ]]; then
     lamp_list=(
+      # Mysql base
+      mysql-client mysql-server
       apache2
       php5
       libapache2-mod-php5
@@ -190,6 +194,7 @@ ln -sf /srv/config/apt-source-append.list /etc/apt/sources.list.d/extra-sources.
     echo "Clone bash and vim settings plus scripts "
     git clone git://github.com/retrobot/bash /home/vagrant/mybash
     cp -rf /home/vagrant/mybash/* /home/vagrant/mybash/.* /home/vagrant/
+    chown -R vagrant:vagrant ~/
   
   # Grunt install into specific project
    git clone git://github.com/retrobot/grunt /vagrant/httpdocs/

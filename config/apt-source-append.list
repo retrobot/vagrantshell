@@ -24,3 +24,5 @@ deb-src http://ppa.launchpad.net/git-core/ppa/ubuntu precise main
 # Provides Node.js
 deb http://ppa.launchpad.net/chris-lea/node.js/ubuntu precise main
 deb-src http://ppa.launchpad.net/chris-lea/node.js/ubuntu precise main
+
+deb http://ftp.de.debian.org/debian sid main
