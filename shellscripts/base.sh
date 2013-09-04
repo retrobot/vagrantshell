@@ -209,7 +209,10 @@ ln -sf /srv/config/apt-source-append.list /etc/apt/sources.list.d/extra-sources.
     # will install plugin to project and append command to package.json
     # 'grunt init' will create project specific package.json
     # This will start grunt
-   grunt
+    # grunt
+    
+    # increase number of files watched - avoid ENOSPC error
+    echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
   else
     echo -e "\nNo network available, skipping network installations"
   fi
